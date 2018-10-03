@@ -7,35 +7,22 @@ This is a temporary script file.
 
 import pygrib
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 import urllib
 from datetime import datetime
 import math
-#from math import *
-#from mpl_toolkits.basemap import Basemap
 from scipy.interpolate import Rbf, LinearNDInterpolator
 
 from constants import *
 
-class balloon:
-    def __init__(self, _lat, _lon, _h):
-        self.lat = _lat
-        self.lon = _lon
-        self.h = _h
-
 
 class atmosphere:
+    default_variables = ["TMP", "UGRD", "VGRD", "HGT", "RH"]
+    default_levels = [1000,  975,  950,  925,  900, 850,  800,  750,  700,
+                    650,  600, 550, 500, 450, 400, 350, 300, 250, 200, 150,
+                    100, 70, 50, 30, 20, 10, 7, 5, 3, 2, 1, "surface"]
+
     def __init__(self, file_name = "file.anl"):
-        grab_levels = [1000,  975,  950,  925,  900, 850,  800,  750,  700,
-                       650,  600, 550, 500, 450, 400, 350, 300, 250, 200, 150,
-                       100, 70, 50, 30, 20, 10, 7, 5, 3, 2, 1, "surface"]
-        now = datetime.now()
-        hr = 0
-        date_hr = "%d%02d%02d%02d" % (now.year, now.month, now.day, hr)
-
-        variables = ["TMP", "UGRD", "VGRD", "HGT", "RH"]
-
         grib_file = file_name
         grbs = pygrib.open(grib_file)
 
@@ -108,7 +95,9 @@ class atmosphere:
         self.j_cur = -1
         self.k_cur = -1
 
-    def download_file(self, lat_range, lon_range, variables, levels, date_hr, file_name):
+    @staticmethod
+    def download_file(lat_range, lon_range, date_hr, file_name,
+                      variables = default_variables, levels = default_levels):
         hr = date_hr[-2:]
         header_str = "http://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_1p%s.pl?file=gfs.t%sz.pgrb2.1p00.anl&" %(hr,hr)
 
@@ -145,8 +134,7 @@ class atmosphere:
             raise Exception("Bin error:lon %f is outside of lon_ar values (%f %f)" % (lon, self.lon_min, self.lon_max))
 
         i = int((lat - self.lat_min)/self.res)
-        j = int((lon - self.lon_min)/self.res)
-
+        j = int((lon - self.lon_min)/self.res)        
         if(z < self.h_ar[i,j,0] or z > self.h_ar[i,j,-1]):
             raise Exception("Bin error: z %f is outside of h_ar values (%f %f)" % (lon, self.h_ar[i,j,0], self.h_ar[i,j,-1]))
 
@@ -371,24 +359,25 @@ class atmosphere:
         P_H2O = RH*self.get_P_sat(T)
         return ((P - P_H2O)*M_AIR + P_H2O*M_H2O)/(RU*T)
 
-
-
-
-
-
-atm = atmosphere()
-print atm.g_ar.shape
-d = np.zeros((2,100))
-print atm.get_orog(20.0, 275.0)
-for (i,l) in enumerate(np.linspace(5., 20., 100)):
-    d[0,i] = l
-    d[1,i] = atm.get_orog(l,275)
-#print atm.g_ar[atm.i_cur-10:atm.i_cur,25]
-plt.plot(d[0,:], d[1,:], ".")
-#print atm.i_cur, atm.j_cur
-#print atm.g_ar.size
-#print atm.g_ar[39:49][atm.j_cur-1]
-plt.plot(atm.lat_ar[atm.i_cur-15:atm.i_cur,0], atm.g_ar[atm.i_cur-15:atm.i_cur,atm.j_cur])
+# lat_range = (-10, 50)
+# lon_range = (250, 350)
+# now = datetime.now()
+# hr = 0
+# date_hr = "%d%02d%02d%02d" % (now.year, now.month, now.day, hr)
+# #atmosphere.download_file(lat_range, lon_range, date_hr, "file.anl")
+# # atm = atmosphere()
+# # print atm.g_ar.shape
+# d = np.zeros((2,100))
+# print atm.get_orog(20.0, 275.0)
+# for (i,l) in enumerate(np.linspace(5., 20., 100)):
+#     d[0,i] = l
+#     d[1,i] = atm.get_orog(l,275)
+# print atm.g_ar[atm.i_cur-10:atm.i_cur,25]
+# plt.plot(d[0,:], d[1,:], ".")
+# print atm.i_cur, atm.j_cur
+# print atm.g_ar.size
+# print atm.g_ar[39:49][atm.j_cur-1]
+# plt.plot(atm.lat_ar[atm.i_cur-15:atm.i_cur,0], atm.g_ar[atm.i_cur-15:atm.i_cur,atm.j_cur])
 #
 #b = balloon(36.0104, 360-84.2696, 1000)
 #d = np.zeros((2,100))
