@@ -1,15 +1,31 @@
 import atmosphere
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 
 atm = atmosphere.atmosphere("file.anl")
 
-for i in np.linspace(atm.lat_min, atm.lat_max, atm.lat_max - atm.lat_min):
-    for j in np.linspace(atm.lon_min, atm.lon_max, atm.lon_max - atm.lon_min):
-        print(i,j, atm.get_orog(i,j))
+lon_range = np.linspace(atm.lon_min+1, atm.lon_max-1, atm.lon_max - atm.lon_min)
+lat_range = np.linspace(atm.lat_min+1, atm.lat_max-1, atm.lat_max - atm.lat_min)
 
+nx = len(lat_range)
+ny = len(lon_range)
+
+ground = np.zeros((nx,ny))
+
+
+for i in range(len(lat_range)):
+    for j in range(len(lon_range)):
+        ground[i][j] = atm.get_orog(lat_range[i], lon_range[j])
+
+
+fig, ax = plt.subplots(1,1)
+
+print(ground)
 #plt.figure()
-#m.pcolormesh(x,y,t_data[10],shading='flat',cmap=plt.cm.jet)
+P = ax.pcolormesh(lon_range, lat_range, ground)
+fig.savefig("hello.png")
+#plt.pcolormesh(x,y,t_data[10],shading='flat',cmap=plt.cm.jet)
 #m.colorbar(location='right')
 #m.drawcoastlines()
 ##m.fillcontinents()

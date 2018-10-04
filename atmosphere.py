@@ -125,7 +125,7 @@ class atmosphere:
         dfile.retrieve(URL, os.path.join(cwd,file_name))
 
 
-    def get_bin(self, lat, lon, z):
+    def get_bin(self, lat, lon, z, twod = False):
         """"get i, j, k bins in data arrays for position (lat,lon,z)"""
         if(lat < self.lat_min or lat > self.lat_max):
             raise Exception("Bin error: lat %f is outside of lat_ar values (%f %f)" % (lat, self.lat_min, self.lat_max))
@@ -134,7 +134,9 @@ class atmosphere:
             raise Exception("Bin error:lon %f is outside of lon_ar values (%f %f)" % (lon, self.lon_min, self.lon_max))
 
         i = int((lat - self.lat_min)/self.res)
-        j = int((lon - self.lon_min)/self.res)        
+        j = int((lon - self.lon_min)/self.res)
+        if(twod):
+            return (i,j,0)
         if(z < self.h_ar[i,j,0] or z > self.h_ar[i,j,-1]):
             raise Exception("Bin error: z %f is outside of h_ar values (%f %f)" % (lon, self.h_ar[i,j,0], self.h_ar[i,j,-1]))
 
@@ -273,7 +275,7 @@ class atmosphere:
 
         interp = LinearNDInterpolator(points, loc_data)
         def get_interp(x,y):
-            return interp(x, y)
+            return float(interp(x, y))
 
         return get_interp
 
@@ -337,7 +339,7 @@ class atmosphere:
     def get_orog(self, lat, lon):
         """return interpolated ground height (m) at lat(deg), lon(deg)"""
         #if (i,j,k) bin has changed or interpolation function has not been initialized, recompute interpolation function
-        (i,j,k) = self.get_bin(lat,lon,0)
+        (i,j,k) = self.get_bin(lat,lon,0, twod = True)
         if ( (i == self.i_cur) and (j == self.j_cur) and (self.orog_interp != 0)):
             return self.orog_interp(lat,lon)
         else:
