@@ -58,8 +58,7 @@ class atmosphere:
             data = g.values
             v = g.shortName
             l = g.level
-            li = np.searchsorted(self.levels, l)
-
+            li = np.searchsorted(self.levels, l)            
             if(v == "u"):
                 self.u_ar[:,:,li] = data
             elif (v == "v"):
@@ -253,12 +252,11 @@ class atmosphere:
         loc_data =  []
 
 
-        shift = np.zeros(3, dtype=int)
+        shift = np.zeros(2, dtype=int)
 
-        if(i == 0): shift[0] = 1
-        if(j == 0): shift[1] = 1
         if(i == self.n_lat -1): shift[0] = -1
         if(j == self.n_lon -1): shift[1] = -1
+
 
 
         i_range = range(0,2) + shift[0]
@@ -341,10 +339,15 @@ class atmosphere:
         #if (i,j,k) bin has changed or interpolation function has not been initialized, recompute interpolation function
         (i,j,k) = self.get_bin(lat,lon,0, twod = True)
         if ( (i == self.i_cur) and (j == self.j_cur) and (self.orog_interp != 0)):
+            # if(math.isnan(self.orog_interp(lat,lon))):
+            #     print lat, lon, self.orog_interp(lat,lon)
             return self.orog_interp(lat,lon)
         else:
             (self.i_cur, self.j_cur) = (i, j)
             self.orog_interp = self.get_orog_interp(i, j, self.g_ar)
+            if(math.isnan(self.orog_interp(lat,lon))):
+               print lat, lon, self.orog_interp(lat,lon)
+               sys.exit()
             return self.orog_interp(lat,lon)
 
 
