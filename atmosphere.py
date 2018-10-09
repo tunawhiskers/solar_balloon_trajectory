@@ -58,7 +58,7 @@ class atmosphere:
             data = g.values
             v = g.shortName
             l = g.level
-            li = np.searchsorted(self.levels, l)            
+            li = np.searchsorted(self.levels, l)
             if(v == "u"):
                 self.u_ar[:,:,li] = data
             elif (v == "v"):
@@ -136,8 +136,10 @@ class atmosphere:
         j = int((lon - self.lon_min)/self.res)
         if(twod):
             return (i,j,0)
-        if(z < self.h_ar[i,j,0] or z > self.h_ar[i,j,-1]):
-            raise Exception("Bin error: z %f is outside of h_ar values (%f %f)" % (lon, self.h_ar[i,j,0], self.h_ar[i,j,-1]))
+        if(z < self.h_ar[i,j,0]):
+            k = 0
+        elif():
+            k = max(self.h_ar[i,j])        
 
         k = np.searchsorted(self.h_ar[i,j], z, side = 'right')-1
         return (i,j,k)
