@@ -213,5 +213,6 @@ def test_P_interp():
     ax.set_ylabel("Pressure (Pa)")
     fig.savefig("P_vs_lon.png", dpi = 300)
 
-
+#all variable interp tests
+#all variable slice test
 test_P_interp()
