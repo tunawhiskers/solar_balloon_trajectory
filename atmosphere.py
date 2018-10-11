@@ -139,7 +139,7 @@ class atmosphere:
         if(z < self.h_ar[i,j,0]):
             k = 0
         elif():
-            k = max(self.h_ar[i,j])        
+            k = max(self.h_ar[i,j])
 
         k = np.searchsorted(self.h_ar[i,j], z, side = 'right')-1
         return (i,j,k)
@@ -165,7 +165,7 @@ class atmosphere:
         #use a 2x2x2 stencil
         for ii in range(0,2):
             for jj in range(0,2):
-                for kk in range(0,2):
+                for kk in range(-1,2):
                     loc_lat.append(self.lat_ar[i + ii, j + jj])
                     loc_lon.append(self.lon_ar[i + ii, j + jj])
                     loc_h.append(self.h_ar[i+ii, j +jj, k+kk])
@@ -174,7 +174,7 @@ class atmosphere:
 
         points = zip(loc_lat, loc_lon, loc_h)
         #pressure is exponential with height so fit log of data and return exp
-        interp = LinearNDInterpolator(points, np.log(loc_data))
+        interp = LinearNDInterpolator(points, np.log(loc_data), fill_value = -10000)
         def get_interp(x,y,z):
             return np.exp(interp(x, y, z))*100 #100 converts m
 
