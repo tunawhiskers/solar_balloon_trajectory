@@ -162,10 +162,24 @@ class atmosphere:
         loc_h =  []
         loc_data =  []
 
+        shift = np.zeros(3, dtype=int)
+
+        if(i == 0): shift[0] = 1
+        if(j == 0): shift[1] = 1
+        if(k == 0): shift[2] = 1
+
+        if(i == self.n_lat -1): shift[0] = -1
+        if(j == self.n_lon -1): shift[1] = -1
+        if(k == self.n_levels - 1): shift[2] = -1
+
+        i_range = range(0,2) + shift[0]
+        j_range = range(0,2) + shift[1]
+        k_range = range(-1,2) + shift[2]
+
         #use a 2x2x2 stencil
-        for ii in range(0,2):
-            for jj in range(0,2):
-                for kk in range(-1,2):
+        for ii in i_range:
+            for jj in j_range:
+                for kk in k_range:
                     loc_lat.append(self.lat_ar[i + ii, j + jj])
                     loc_lon.append(self.lon_ar[i + ii, j + jj])
                     loc_h.append(self.h_ar[i+ii, j +jj, k+kk])
