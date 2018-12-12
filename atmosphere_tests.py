@@ -40,6 +40,7 @@ def test_h_slice(atm, h, func, fname):
     ny = len(lon_range)
     data = np.zeros((nx,ny))
 
+
     for i in range(len(lat_range)):
         for j in range(len(lon_range)):
             data[i][j] = func(lat_range[i], lon_range[j], h)
@@ -54,7 +55,7 @@ def test_h_slice(atm, h, func, fname):
 def test_lat_slice(atm, lat, func, fname):
     atm = atmosphere.atmosphere("file.anl")
     lon_range = np.linspace(atm.lon_min, atm.lon_max, 2*(atm.lon_max - atm.lon_min+1))
-    h_range = np.linspace(0, 2*atm.h_ar[0][0][-1], 2*len(atm.levels))
+    h_range = np.linspace(0, atm.h_ar[0][0][-1], 2*len(atm.levels))
 
     nx = len(lon_range)
     ny = len(h_range)
@@ -66,7 +67,27 @@ def test_lat_slice(atm, lat, func, fname):
     P = ax.pcolormesh(lon_range, h_range, data)
     fig.colorbar(P, ax=ax)
     ax.set_ylabel("height (m)")
-    ax.set_xlabel("long (deg)")
+    ax.set_xlabel("log (deg)")
+    ax.legend()
+    fig.savefig(fname, dpi = 300)
+
+def test_lon_slice(atm, lon, func, fname):
+    atm = atmosphere.atmosphere("file.anl")
+    lat_range = np.linspace(atm.lat_min, atm.lat_max, 2*(atm.lat_max - atm.lat_min+1))
+    h_range = np.linspace(0, atm.h_ar[0][0][-1], 2*len(atm.levels))
+
+    nx = len(lat_range)
+    ny = len(h_range)
+    data = np.zeros((ny,nx))
+    for i in range(len(lat_range)):
+        for j in range(len(h_range)):
+            data[j][i] = func(lat_range[i], lon, h_range[j])
+            #print(i,j, lat_range[i], h_range[j])
+    fig, ax = plt.subplots(1,1)
+    P = ax.pcolormesh(lat_range, h_range, data)
+    fig.colorbar(P, ax=ax)
+    ax.set_ylabel("height (m)")
+    ax.set_xlabel("log (deg)")
     ax.legend()
     fig.savefig(fname, dpi = 300)
 
@@ -180,7 +201,7 @@ def test_var_interp(atm, var, func, lat, lon, height, folder):
 
 
 def test_P_interp(atm, lat, lon, height, folder):
-    #test: demonstrate that velocity temperpolation is valid
+    #test: demonstrate that velocity interpolation is valid
     ground_h = atm.get_orog(lat, lon)
     (i,j,k) = atm.get_bin(lat, lon, ground_h + height)
 
@@ -254,22 +275,27 @@ def test_P_interp(atm, lat, lon, height, folder):
 #date_hr = "%d%02d%02d%02d" % (now.year, now.month, now.day, hr)
 #atmosphere.atmosphere.download_file(lat_range, lon_range, date_hr, "file.anl")
 atm = atmosphere.atmosphere("file.anl")
-# lat = 34.0
-# lon = 180.-106
+lat = 34.0
+lon = 180.-106
+#print(atm.lat_min, atm.lat_max)
+#print(atm.lon_min, atm.lon_max)
+
+
 # test_var_interp(atm, atm.u_ar, atm.get_u, lat, lon, 2000, "u_imgs")
 # test_var_interp(atm, atm.v_ar, atm.get_v, lat, lon, 2000, "v_imgs")
 # test_var_interp(atm, atm.T_ar, atm.get_T, lat, lon, 2000, "T_imgs")
-#test_P_interp(atm, lat, lon, 2000, "P_interp")
+# test_P_interp(atm, lat, lon, 2000, "P_interp")
 
-# test_h_slice(atm, 5000, atm.get_P, "slices/P_slice.png")
-# test_h_slice(atm, 5000, atm.get_u, "slices/u_slice.png")
-# test_h_slice(atm, 5000, atm.get_v, "slices/v_slice.png")
-# test_h_slice(atm, 5000, atm.get_T, "slices/T_slice.png")
+#test_h_slice(atm, 5000, atm.get_P, "slices/P_slice.png")
+#test_h_slice(atm, 5000, atm.get_u, "slices/u_slice.png")
+#test_h_slice(atm, 5000, atm.get_v, "slices/v_slice.png")
+#test_h_slice(atm, 5000, atm.get_T, "slices/T_slice.png")
 
-test_lat_slice(atm, 45.0, atm.get_u, "slices/u_slice.png")
-test_lat_slice(atm, 45.0, atm.get_v, "slices/v_slice.png")
-test_lat_slice(atm, 45.0, atm.get_v, "slices/T_slice.png")
-test_lat_slice(atm, 45.0, atm.get_P, "slices/P_slice.png")
+#test_lat_slice(atm, 45.0, atm.get_u, "slices/u_slice.png")
+#test_lat_slice(atm, 45.0, atm.get_v, "slices/v_slice.png")
+#test_lat_slice(atm, 45.0, atm.get_v, "slices/T_slice.png")
+#test_lat_slice(atm, lat, atm.get_P, "slices/P_slice_lat.png")
+test_lon_slice(atm, lon, atm.get_P, "slices/P_slice_lon.png")
 #test_h_slice(atm, 5000, atm.get_u, "slices/u_slice.png")
 # test_h_slice(atm, 5000, atm.get_v, "slices/v_slice.png")
 # test_h_slice(atm, 5000, atm.get_T, "slices/T_slice.png")

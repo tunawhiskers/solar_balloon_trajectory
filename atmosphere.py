@@ -136,12 +136,11 @@ class atmosphere:
         j = int((lon - self.lon_min)/self.res)
         if(twod):
             return (i,j,0)
+        k = np.searchsorted(self.h_ar[i,j], z, side = 'right')-1
         if(z < self.h_ar[i,j,0]):
             k = 0
-        elif():
-            k = max(self.h_ar[i,j])
-
-        k = np.searchsorted(self.h_ar[i,j], z, side = 'right')-1
+        elif(z > self.h_ar[i,j,-1]):
+            k = len(self.h_ar[i,j])-1
         return (i,j,k)
 
 
@@ -164,18 +163,23 @@ class atmosphere:
 
         shift = np.zeros(3, dtype=int)
 
-        if(i == 0): shift[0] = 1
-        if(j == 0): shift[1] = 1
-        if(k == 0): shift[2] = 1
-
         if(i == self.n_lat -1): shift[0] = -1
         if(j == self.n_lon -1): shift[1] = -1
-        if(k == self.n_levels - 1): shift[2] = -1
 
-        i_range = range(0,2) + shift[0]
-        j_range = range(0,2) + shift[1]
-        k_range = range(-1,2) + shift[2]
+        if(k == 0):
+            shift[2] = 1
+        if(k+2 == self.n_levels - 1):
+            shift[2] = -1
+        if(k+1 == self.n_levels - 1):
+            shift[2] = -2
+        if(k == self.n_levels - 1):
+            shift[2] = -3
 
+        i_range = np.array(range(0,2) + shift[0])
+        j_range = np.array(range(0,2) + shift[1])
+        k_range = np.array(range(-1,3) + shift[2])
+
+        print(k, k+k_range, shift[2], self.n_levels-1)
         #use a 2x2x2 stencil
         for ii in i_range:
             for jj in j_range:
@@ -185,12 +189,11 @@ class atmosphere:
                     loc_h.append(self.h_ar[i+ii, j +jj, k+kk])
                     loc_data.append(self.levels[k+kk])
 
+        points = np.array(list(zip(loc_lat, loc_lon, loc_h)))
+        interp = LinearNDInterpolator(points, np.log(loc_data))
 
-        points = zip(loc_lat, loc_lon, loc_h)
-        #pressure is exponential with height so fit log of data and return exp
-        interp = LinearNDInterpolator(points, np.log(loc_data), fill_value = -10000)
         def get_interp(x,y,z):
-            return np.exp(interp(x, y, z))*100 #100 converts m
+            return np.exp((interp(x, y, z)))*100 #100 converts m
 
         return get_interp
 
@@ -285,7 +288,11 @@ class atmosphere:
                 loc_lon.append(self.lon_ar[i + ii, j + jj])
                 loc_data.append(data_ar[i+ii, j +jj])
 
-        points = zip(loc_lat, loc_lon)
+        print(loc_lat)
+        print(loc_lon)
+
+
+        points = np.array(list(zip(loc_lat, loc_lon)))
 
         interp = LinearNDInterpolator(points, loc_data)
         def get_interp(x,y):
@@ -362,7 +369,7 @@ class atmosphere:
             (self.i_cur, self.j_cur) = (i, j)
             self.orog_interp = self.get_orog_interp(i, j, self.g_ar)
             if(math.isnan(self.orog_interp(lat,lon))):
-               print lat, lon, self.orog_interp(lat,lon)
+               print(lat, lon, self.orog_interp(lat,lon))
                sys.exit()
             return self.orog_interp(lat,lon)
 
